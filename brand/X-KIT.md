@@ -251,3 +251,19 @@ https://elysiumohm.com/app
 
 $eOHM
 ```
+
+### 19. Market cap scale · 225 chars · media: `eohm-mcap-12s.mp4`
+```
+Peak market caps, 2021 OHM season:
+
+OlympusDAO: $4.35B
+Wonderland: $2.08B
+
+eOHM today: ~$9.8K
+
+That is 212,000x to Wonderland's peak and 442,000x to OlympusDAO's.
+
+The first OHM fork on Elysium is just getting started.
+
+$eOHM
+```
