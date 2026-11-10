@@ -14,7 +14,8 @@ const PORT = process.env.PORT || 8286;
 const ROOT = path.join(__dirname, '..');
 const TOKEN = process.env.TOKEN_TICKER || 'eOHM';
 const DATA_PATH = process.env.DATA_PATH || path.join(ROOT, 'data.json');
-const EOHM_MINT = process.env.EOHM_MINT || '';  // $eOHM on Elysium — staking opens when this is set
+// $eOHM on Elysium. Staking opens the instant this is known: set EOHM_MINT, or POST /api/admin/mint (no redeploy, persisted).
+let EOHM_MINT = (process.env.EOHM_MINT || '').toLowerCase(), MINT_DEC = +(process.env.EOHM_DECIMALS || 18);
 // staking custody: real $eOHM deposits land here (key held offline by the operator — never on this server)
 const TREASURY_WALLET = process.env.TREASURY_WALLET || '0x3DFabE8f7c388B35b7A9358AD69785879B9c6D80';
 const USDC = (process.env.USDC_ADDR || '0xb47c4c8f73f009cc0c0d3f92b388d13e293f0b65').toLowerCase();  // native USDC on Elysium (6 dp)
@@ -74,7 +75,7 @@ async function pollTreasury() {
   if (!EOHM_MINT) return;
   try {
     const hex = await rpc('eth_call', [{ to: EOHM_MINT, data: '0x70a08231' + TREASURY_WALLET.slice(2).toLowerCase().padStart(64, '0') }, 'latest']);
-    treasuryStaked = Number(BigInt(hex)) / 1e18;
+    treasuryStaked = Number(BigInt(hex)) / 10 ** MINT_DEC;
   } catch (e) { /* keep last good */ }
 }
 pollTreasury(); setInterval(pollTreasury, 30000);
@@ -109,10 +110,10 @@ try { db = Object.assign(db, JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'))); } 
 if (!db.wallets) db.wallets = {};
 if (!db.tape) db.tape = [];
 if (!db.withdrawals) db.withdrawals = [];
-if (!db.bondTx) db.bondTx = [];   // every bond payment tx hash ever credited (no double credit)
+if (!db.bondTx) db.bondTx = [];
+if (!EOHM_MINT && db.mint) { EOHM_MINT = db.mint; MINT_DEC = db.mintDec || 18; }
+if (!db.stakeTx) db.stakeTx = db.tape.filter((e) => e.type === 'stake' && e.tx).map((e) => e.tx);   // every bond payment tx hash ever credited (no double credit)
 const treasuryUsd = () => Math.max(db.treasury, treasuryHype * HYPE_USD + treasuryUsdc);  // pending unstake payouts, settled manually from the treasury
-// migration: wallets seeded under the old 1k cap get topped up to the new seed
-for (const w of Object.values(db.wallets)) if (w.seeded && w.balance <= 1000) w.balance += SEED_BALANCE - 1000;
 // the Stampede: rolling tape of protocol actions, newest first
 function tapePush(type, wallet, amount) {
   db.tape.unshift({ t: Date.now(), type, w: wallet.slice(0, 4) + '…' + wallet.slice(-4), amount: +(+amount).toFixed(2) });
@@ -126,7 +127,7 @@ function rebase() { db.index *= (1 + currentRate()); db.epoch++; db.lastRebase =
 (function catchup() { const missed = Math.floor((Date.now() - db.lastRebase) / 1000 / REBASE_SEC); for (let i = 0; i < Math.min(missed, 10000); i++) rebase(); })();
 
 function liveIndex() { const frac = (Date.now() - db.lastRebase) / 1000 / REBASE_SEC; return db.index * (1 + currentRate() * Math.max(0, Math.min(1, frac))); }
-function W(addr) { return db.wallets[addr] || (db.wallets[addr] = { balance: SEED_BALANCE, agons: 0, bonds: [], seeded: true }); }
+function W(addr) { return db.wallets[addr] || (db.wallets[addr] = { balance: SEED_BALANCE, agons: 0, bonds: [] }); }
 function stakedOf(w, idx) { return w.agons * (idx || liveIndex()); }
 function totalStaked(idx) { return db.totalAgons * (idx || liveIndex()); }
 const circulating = () => TOTAL_SUPPLY;
@@ -175,9 +176,18 @@ function body(req) { return new Promise((r) => { let b = ''; req.on('data', (c) 
 
 http.createServer(async (req, res) => {
   const u = req.url.split('?')[0];
-  if (u === '/api/config') return json(res, 200, { token: TOKEN, rebaseSec: REBASE_SEC, apy: APY_TARGET, mint: EOHM_MINT, treasury: TREASURY_WALLET, minStake: MIN_STAKE, lockSec: LOCK_SEC, chainId: CHAIN_ID, rpcUrl: RPC_URL, network: 'elysium', explorer: EXPLORER, usdc: USDC, whype: WHYPE, hypeUsd: HYPE_USD });
+  // operator: switch staking on the moment $eOHM is live. Verifies it is a token contract on Elysium and reads its decimals.
+  if (u === '/api/admin/mint') {
+    const q = new URL(req.url, 'http://x').searchParams; if (!ADMIN_KEY || q.get('key') !== ADMIN_KEY) return json(res, 403, { error: 'nope' });
+    const m = String(q.get('mint') || '').toLowerCase(); if (!/^0x[0-9a-f]{40}$/.test(m)) return json(res, 200, { error: 'mint must be a 0x… address' });
+    try { const code = await rpc('eth_getCode', [m, 'latest']); if (!code || code === '0x') return json(res, 200, { error: 'no contract at that address on Elysium' });
+      const dec = Number(BigInt(await rpc('eth_call', [{ to: m, data: '0x313ce567' }, 'latest']))); const sym = await rpc('eth_call', [{ to: m, data: '0x95d89b41' }, 'latest']).catch(() => '0x');
+      EOHM_MINT = m; MINT_DEC = dec; db.mint = m; db.mintDec = dec; save(); pollTreasury(); pollPrice();
+      return json(res, 200, { ok: true, mint: m, decimals: dec, symbolHex: sym, treasury: TREASURY_WALLET, staking: 'open' });
+    } catch (e) { return json(res, 200, { error: 'could not read that contract — ' + e.message }); } }
+  if (u === '/api/config') return json(res, 200, { token: TOKEN, rebaseSec: REBASE_SEC, apy: APY_TARGET, mint: EOHM_MINT, decimals: MINT_DEC, treasury: TREASURY_WALLET, minStake: MIN_STAKE, lockSec: LOCK_SEC, chainId: CHAIN_ID, rpcUrl: RPC_URL, network: 'elysium', explorer: EXPLORER, usdc: USDC, whype: WHYPE, hypeUsd: HYPE_USD });
   if (u === '/api/metrics') return json(res, 200, metrics());
-  if (req.method === 'POST' && u === '/api/balance') { const d = await body(req); if (!isWallet(d.wallet || '')) return json(res, 200, { error: 'bad wallet' }); if (!EOHM_MINT) return json(res, 200, { balance: 0, prelaunch: true }); try { const hex = await rpc('eth_call', [{ to: EOHM_MINT, data: '0x70a08231' + d.wallet.slice(2).toLowerCase().padStart(64, '0') }, 'latest']); return json(res, 200, { balance: Number(BigInt(hex)) / 1e18 }); } catch (e) { return json(res, 200, { error: 'rpc unavailable' }); } }
+  if (req.method === 'POST' && u === '/api/balance') { const d = await body(req); if (!isWallet(d.wallet || '')) return json(res, 200, { error: 'bad wallet' }); if (!EOHM_MINT) return json(res, 200, { balance: 0, prelaunch: true }); try { const hex = await rpc('eth_call', [{ to: EOHM_MINT, data: '0x70a08231' + d.wallet.slice(2).toLowerCase().padStart(64, '0') }, 'latest']); return json(res, 200, { balance: Number(BigInt(hex)) / 10 ** MINT_DEC }); } catch (e) { return json(res, 200, { error: 'rpc unavailable' }); } }
   if (req.method === 'POST' && u === '/api/account') { const d = await body(req); if (!isWallet(d.wallet || '')) return json(res, 200, { error: 'connect a valid EVM wallet' }); return json(res, 200, account(d.wallet)); }
   // stake = a real on-chain $eOHM transfer to the treasury. The server VERIFIES the tx on
   // Elysium — it must exist, have succeeded, be a transfer() of $eOHM from this wallet
@@ -187,26 +197,23 @@ http.createServer(async (req, res) => {
     if (!EOHM_MINT) return json(res, 200, { error: 'staking opens the moment $eOHM launches on Elysium — bond HYPE or USDC now to get eOHM at a discount' });
     if (!/^0x[0-9a-fA-F]{64}$/.test(d.txHash || '')) return json(res, 200, { error: 'missing deposit tx — stake sends $eOHM to the treasury first' });
     const txHash = d.txHash.toLowerCase();
-    if (db.tape.some((e) => e.tx === txHash)) return json(res, 200, { error: 'deposit already credited' });
-    let amt;
+    if (db.stakeTx.includes(txHash) || db.tape.some((e) => e.tx === txHash)) return json(res, 200, { error: 'deposit already credited' });
+    // credit = every $eOHM Transfer(from = this wallet, to = treasury) in the receipt: works for plain transfers,
+    // smart wallets and routers, and credits what actually arrived (fee-on-transfer safe)
+    let amt = 0; const me = d.wallet.toLowerCase(), tre = TREASURY_WALLET.toLowerCase();
     try {
-      const [tx, rc] = await Promise.all([rpc('eth_getTransactionByHash', [txHash]), rpc('eth_getTransactionReceipt', [txHash])]);
-      if (!tx || !rc) return json(res, 200, { error: 'deposit not found on Elysium — nothing was credited' });
+      const rc = await rpc('eth_getTransactionReceipt', [txHash]);
+      if (!rc) return json(res, 200, { error: 'deposit not found on Elysium yet — try again in a few seconds' });
       if (rc.status !== '0x1') return json(res, 200, { error: 'deposit transaction failed on-chain' });
-      if ((tx.to || '').toLowerCase() !== EOHM_MINT.toLowerCase()) return json(res, 200, { error: 'not a $eOHM transfer' });
-      if ((tx.from || '').toLowerCase() !== d.wallet.toLowerCase()) return json(res, 200, { error: 'deposit was not sent from your wallet' });
-      // decode transfer(address to, uint256 value): 0xa9059cbb + to(32) + value(32)
-      const inp = (tx.input || '').toLowerCase();
-      if (!inp.startsWith('0xa9059cbb') || inp.length < 138) return json(res, 200, { error: 'not a token transfer' });
-      const to = '0x' + inp.slice(34, 74);
-      if (to !== TREASURY_WALLET.toLowerCase()) return json(res, 200, { error: 'deposit did not go to the treasury' });
-      amt = Number(BigInt('0x' + inp.slice(74, 138))) / 1e18;
+      for (const lg of rc.logs || []) { if ((lg.address || '').toLowerCase() !== EOHM_MINT || (lg.topics || [])[0] !== '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' || lg.topics.length < 3) continue;
+        if (('0x' + lg.topics[1].slice(26)) === me && ('0x' + lg.topics[2].slice(26)) === tre) amt += Number(BigInt(lg.data)) / 10 ** MINT_DEC; }
     } catch (e) { return json(res, 200, { error: 'could not verify deposit — try again in a moment' }); }
+    if (!(amt > 0)) return json(res, 200, { error: 'no $eOHM transfer from your wallet to the treasury in this transaction' });
     if (!(amt > 0)) return json(res, 200, { error: 'zero-value deposit' });
     if (amt < MIN_STAKE) return json(res, 200, { error: 'below minimum — deposit was ' + amt.toLocaleString() + ', minimum is ' + MIN_STAKE.toLocaleString() + ' $eOHM' });
     const w = W(d.wallet); const idx = liveIndex(); const ag = amt / idx; w.agons += ag; db.totalAgons += ag;
     w.lockUntil = Date.now() + LOCK_SEC * 1000;  // fresh deposit (re)locks the position for the minimum
-    tapePush('stake', d.wallet, amt); db.tape[0].tx = txHash; db.tape[0].ag = ag; db.tape[0].addr = d.wallet; save();
+    db.stakeTx.push(txHash); tapePush('stake', d.wallet, amt); db.tape[0].tx = txHash; db.tape[0].ag = ag; db.tape[0].addr = d.wallet; save();
     return json(res, 200, { ok: true, ...account(d.wallet) });
   }
   // operator: re-verify every credited stake against the chain and reverse any that don't check out.
@@ -217,10 +224,8 @@ http.createServer(async (req, res) => {
       if (e.type !== 'stake' || !e.tx || e.bad) continue;
       let ok = false;
       try {
-        const tx = await rpc('eth_getTransactionByHash', [e.tx]); const rc = await rpc('eth_getTransactionReceipt', [e.tx]);
-        const inp = tx && (tx.input || '').toLowerCase();
-        ok = !!(tx && rc && rc.status === '0x1' && (tx.to || '').toLowerCase() === EOHM_MINT.toLowerCase()
-          && inp && inp.startsWith('0xa9059cbb') && ('0x' + inp.slice(34, 74)) === TREASURY_WALLET.toLowerCase());
+        const rc = await rpc('eth_getTransactionReceipt', [e.tx]);
+        ok = !!(rc && rc.status === '0x1' && (rc.logs || []).some((lg) => (lg.address || '').toLowerCase() === EOHM_MINT && lg.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' && ('0x' + (lg.topics[2] || '').slice(26)) === TREASURY_WALLET.toLowerCase()));
       } catch (x) { continue; /* leave untouched if RPC is flaky */ }
       if (!ok) {
         const addr = e.addr; const ag = e.ag != null ? e.ag : (e.amount / liveIndex());

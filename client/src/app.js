@@ -72,6 +72,7 @@
       const lab = { stake: ['STAKE', 'up'], unstake: ['UNSTAKE', 'dn'], bond: ['BOND', 'ac'] };
       $('stRows').innerHTML = M.tape.map((e) => { const [l, c] = lab[e.type] || [e.type, '']; return `<div class="trow"><span class="side ${c}">${l}</span><span class="mono">${e.w}</span><span class="mono r">${tok(e.amount)} eOHM</span><span class="mut r">${ago(e.t)}</span></div>`; }).join(''); }
     calc();
+    if (M.mint && (!CFG || CFG.mint !== M.mint)) loadConfig().then(() => { if (wallet) loadChainBalance(); });   // launch went live: pick up the mint without a reload
     const bar = $('ca'); if (M.mint) { bar.classList.remove('pre'); $('caV').textContent = M.mint; $('caCopy').style.display = ''; bar.href = (CFG && CFG.explorer ? CFG.explorer : 'https://elysium.kinetiq.xyz/explorer') + '/address/' + M.mint; } else { bar.classList.add('pre'); $('caV').textContent = 'launching on Elysium · bond now at a discount'; $('caCopy').style.display = 'none'; bar.href = '#bond'; }
     $('preStake').style.display = M.mint ? 'none' : '';
   }
@@ -124,8 +125,8 @@
       if (stakeMode === 'stake') {
         if (!CFG || !CFG.mint) return toast('staking opens the moment $eOHM launches — bond now to get eOHM at a discount', true);
         if (CFG.minStake && amt < CFG.minStake) return toast('minimum stake is ' + tok(CFG.minStake) + ' eOHM', true);
-        await ensureChain(); const txHash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from: wallet, to: CFG.mint, data: transferData(CFG.treasury, units($('stakeAmt').value, 18)) }] });
-        await waitReceipt(txHash, 'Deposit'); toast('Confirmed — verifying on Elysium…'); const r = await post('/api/stake', { wallet, txHash }); if (r.error) return toast(r.error, true);
+        await ensureChain(); const txHash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from: wallet, to: CFG.mint, data: transferData(CFG.treasury, units($('stakeAmt').value, CFG.decimals || 18)) }] });
+        await waitReceipt(txHash, 'Deposit'); toast('Confirmed — verifying on Elysium…'); let r; for (let i = 0; i < 5; i++) { r = await post('/api/stake', { wallet, txHash }); if (!r.error || !/not found|try again/.test(r.error)) break; await new Promise((z) => setTimeout(z, 2500)); } if (r.error) return toast(r.error, true);
         A = r; reanchor(); renderAccount(); loadChainBalance(); $('stakeAmt').value = ''; toast('Staked ' + tok(amt) + ' eOHM · (3,3)');
       } else { const r = await post('/api/unstake', { wallet, amount: amt }); if (r.error) return toast(r.error, true); A = r; reanchor(); renderAccount(); $('stakeAmt').value = ''; toast('Unstaked — ' + tok(r.queued) + ' eOHM queued for payout'); }
     } catch (e) { toast(e && e.message ? e.message : 'transaction rejected', true); }
