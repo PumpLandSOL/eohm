@@ -1,0 +1,15 @@
+{
+  "note": "ATH prices per CoinGecko (Jade: Mobula/LiveCoinWatch). Peak mcaps: OHM per The Block citing CoinGecko, Apr 2021; TIME per DefiLlama, Nov 2021. OHM shown as v1 token.",
+  "caps": [["OlympusDAO", "OHM", "Ethereum", 4.35e9, "Apr 2021"], ["Wonderland", "TIME", "Avalanche", 2.08e9, "Nov 2021"]],
+  "forks": [
+    { "name": "Wonderland", "ticker": "TIME", "chain": "Avalanche", "ath": 10063.72, "date": "Nov 2021" },
+    { "name": "Snowbank", "ticker": "SB", "chain": "Avalanche", "ath": 8356.80, "date": "Nov 2021" },
+    { "name": "KlimaDAO", "ticker": "KLIMA", "chain": "Polygon", "ath": 3777, "date": "Oct 2021" },
+    { "name": "Rome", "ticker": "ROME", "chain": "Moonriver", "ath": 1679.53, "date": "Nov 2021" },
+    { "name": "Invictus", "ticker": "IN", "chain": "Solana", "ath": 1425, "date": "Nov 2021" },
+    { "name": "OlympusDAO", "ticker": "OHM", "chain": "Ethereum", "ath": 1415, "date": "Apr 2021" },
+    { "name": "Jade", "ticker": "JADE", "chain": "BSC", "ath": 656, "date": "Nov 2021" },
+    { "name": "Hector", "ticker": "HEC", "chain": "Fantom", "ath": 357.61, "date": "Nov 2021" },
+    { "name": "Spartacus", "ticker": "SPA", "chain": "Fantom", "ath": 323.37, "date": "Nov 2021" }
+  ]
+}
