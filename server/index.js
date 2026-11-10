@@ -44,7 +44,7 @@ const APY_HALF = +(process.env.APY_HALF || 4e6);   // staked $eOHM at the halfwa
 const APY_TARGET = APY_MAX;                          // legacy alias (banner copy / startup log)
 // 24-HOUR APY BOOST: while active, APY is floored at BOOST_APY (old-school ponzi numbers).
 // Arm it by setting BOOST_UNTIL to a unix-ms timestamp (or BOOST_HOURS from boot); off by default.
-const BOOST_APY = +(process.env.BOOST_APY || 250000);
+const BOOST_APY = +(process.env.BOOST_APY || 500000);   // 2× the base 250,000% while a boost runs
 const BOOST_UNTIL_ENV = +(process.env.BOOST_UNTIL || 0);
 const BOOST_HOURS = +(process.env.BOOST_HOURS || 0);
 const TOTAL_SUPPLY = +(process.env.TOTAL_SUPPLY || 1e9);       // fixed supply at launch
@@ -93,7 +93,7 @@ function boostUntil() { return Math.max(BOOST_UNTIL_ENV, db.boostUntil || 0, BOO
 function boostActive() { return Date.now() < boostUntil(); }
 const FIXED_APY = +(process.env.FIXED_APY || 250000);  // pin the displayed/emission APY; set 0 to use dynamic
 function currentApy(ts) {
-  if (FIXED_APY > 0) return FIXED_APY;
+  if (FIXED_APY > 0) return boostActive() ? Math.max(FIXED_APY, BOOST_APY) : FIXED_APY;
   const s = ts == null ? poolStaked() : ts;
   const base = APY_MIN + (APY_MAX - APY_MIN) * (APY_HALF / (APY_HALF + Math.max(0, s)));
   return boostActive() ? Math.max(base, BOOST_APY) : base;
@@ -113,6 +113,7 @@ if (!db.wallets) db.wallets = {};
 if (!db.tape) db.tape = [];
 if (!db.withdrawals) db.withdrawals = [];
 if (!db.bondTx) db.bondTx = [];
+if (db.boostArmed !== 'launch-24h') { db.boostArmed = 'launch-24h'; db.boostUntil = Date.now() + 24 * 3600e3; setTimeout(() => save(), 0); }
 if (!EOHM_MINT && db.mint) { EOHM_MINT = db.mint; MINT_DEC = db.mintDec || 18; }
 if (!db.stakeTx) db.stakeTx = db.tape.filter((e) => e.type === 'stake' && e.tx).map((e) => e.tx);   // every bond payment tx hash ever credited (no double credit)
 const treasuryUsd = () => Math.max(db.treasury, treasuryHype * HYPE_USD + treasuryUsdc);  // pending unstake payouts, settled manually from the treasury

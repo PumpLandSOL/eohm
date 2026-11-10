@@ -318,3 +318,14 @@ CA: 0x71c346c90fc54aa6ea07f41087665f30b4a6aafd
 
 $eOHM
 ```
+
+### 25. 24h APY boost · 221 chars · media: `eohm-boost-12s.mp4`
+```
+⚡ 24-hour staking boost is live.
+
+eOHM staking APY is doubled: 250,000% → 500,000% for the next 24 hours.
+
+Stake with Rabby or MetaMask at elysiumohm.com/app and every 5-minute rebase compounds at the boosted rate.
+
+$eOHM
+```
