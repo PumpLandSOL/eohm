@@ -15,6 +15,8 @@ const ROOT = path.join(__dirname, '..');
 const TOKEN = process.env.TOKEN_TICKER || 'eOHM';
 const DATA_PATH = process.env.DATA_PATH || path.join(ROOT, 'data.json');
 // $eOHM on Elysium. Staking opens the instant this is known: set EOHM_MINT, or POST /api/admin/mint (no redeploy, persisted).
+// EMERGENCY PAUSE: no new stakes or bonds are accepted while paused (env DEPOSITS_PAUSED=1 or /api/admin/pause). Default ON until the treasury is confirmed safe.
+let PAUSED = process.env.DEPOSITS_PAUSED === undefined ? true : process.env.DEPOSITS_PAUSED === '1';
 let EOHM_MINT = (process.env.EOHM_MINT || '0x71c346c90fc54aa6ea07f41087665f30b4a6aafd').toLowerCase(), MINT_DEC = +(process.env.EOHM_DECIMALS || 18);
 // staking custody: real $eOHM deposits land here (key held offline by the operator — never on this server)
 const TREASURY_WALLET = process.env.TREASURY_WALLET || '0x6A690F711928E8b938Fb5FE38F6fc2B8164Abc97';
@@ -150,7 +152,7 @@ function metrics() {
     treasury: treasuryUsd(), treasuryOnchain: { hype: treasuryHype, usdc: treasuryUsdc, hypeUsd: HYPE_USD, wallet: TREASURY_WALLET }, bondedUsd: db.treasury, backingPerToken: backing, price: TOKEN_PRICE, marketCap: TOKEN_PRICE * circulating(),
     runwayDays: runway, rebaseSec: REBASE_SEC, nextRebaseIn: Math.max(0, REBASE_SEC - (Date.now() - db.lastRebase) / 1000),
     bonds: BONDS.map((b) => ({ id: b.id, name: b.name, discount: b.discount, vestDays: b.vestDays, price: TOKEN_PRICE * (1 - b.discount), asset: b.asset, dec: b.dec, min: b.min, assetUsd: b.id === 'usdc' ? 1 : HYPE_USD })),
-    leaderboard, stakers: leaderboard.length, mint: EOHM_MINT, tape: db.tape.slice(0, 12),
+    leaderboard, stakers: leaderboard.length, paused: PAUSED, mint: EOHM_MINT, tape: db.tape.slice(0, 12),
     boost: boostActive() ? { apy: BOOST_APY, until: boostUntil(), secondsLeft: Math.ceil((boostUntil() - Date.now()) / 1000) } : null,
   };
 }
@@ -177,6 +179,7 @@ function body(req) { return new Promise((r) => { let b = ''; req.on('data', (c) 
 http.createServer(async (req, res) => {
   const u = req.url.split('?')[0];
   // operator: switch staking on the moment $eOHM is live. Verifies it is a token contract on Elysium and reads its decimals.
+  if (u === '/api/admin/pause') { const q = new URL(req.url, 'http://x').searchParams; if (!ADMIN_KEY || q.get('key') !== ADMIN_KEY) return json(res, 403, { error: 'nope' }); PAUSED = q.get('on') !== '0'; return json(res, 200, { ok: true, paused: PAUSED }); }
   if (u === '/api/admin/mint') {
     const q = new URL(req.url, 'http://x').searchParams; if (!ADMIN_KEY || q.get('key') !== ADMIN_KEY) return json(res, 403, { error: 'nope' });
     const m = String(q.get('mint') || '').toLowerCase(); if (!/^0x[0-9a-f]{40}$/.test(m)) return json(res, 200, { error: 'mint must be a 0x… address' });
@@ -185,7 +188,7 @@ http.createServer(async (req, res) => {
       EOHM_MINT = m; MINT_DEC = dec; db.mint = m; db.mintDec = dec; save(); pollTreasury(); pollPrice();
       return json(res, 200, { ok: true, mint: m, decimals: dec, symbolHex: sym, treasury: TREASURY_WALLET, staking: 'open' });
     } catch (e) { return json(res, 200, { error: 'could not read that contract — ' + e.message }); } }
-  if (u === '/api/config') return json(res, 200, { token: TOKEN, rebaseSec: REBASE_SEC, apy: APY_TARGET, mint: EOHM_MINT, decimals: MINT_DEC, treasury: TREASURY_WALLET, minStake: MIN_STAKE, lockSec: LOCK_SEC, chainId: CHAIN_ID, rpcUrl: RPC_URL, network: 'elysium', explorer: EXPLORER, usdc: USDC, whype: WHYPE, hypeUsd: HYPE_USD });
+  if (u === '/api/config') return json(res, 200, { token: TOKEN, rebaseSec: REBASE_SEC, apy: APY_TARGET, mint: EOHM_MINT, decimals: MINT_DEC, paused: PAUSED, treasury: TREASURY_WALLET, minStake: MIN_STAKE, lockSec: LOCK_SEC, chainId: CHAIN_ID, rpcUrl: RPC_URL, network: 'elysium', explorer: EXPLORER, usdc: USDC, whype: WHYPE, hypeUsd: HYPE_USD });
   if (u === '/api/metrics') return json(res, 200, metrics());
   if (req.method === 'POST' && u === '/api/balance') { const d = await body(req); if (!isWallet(d.wallet || '')) return json(res, 200, { error: 'bad wallet' }); if (!EOHM_MINT) return json(res, 200, { balance: 0, prelaunch: true }); try { const hex = await rpc('eth_call', [{ to: EOHM_MINT, data: '0x70a08231' + d.wallet.slice(2).toLowerCase().padStart(64, '0') }, 'latest']); return json(res, 200, { balance: Number(BigInt(hex)) / 10 ** MINT_DEC }); } catch (e) { return json(res, 200, { error: 'rpc unavailable' }); } }
   if (req.method === 'POST' && u === '/api/account') { const d = await body(req); if (!isWallet(d.wallet || '')) return json(res, 200, { error: 'connect a valid EVM wallet' }); return json(res, 200, account(d.wallet)); }
@@ -194,6 +197,7 @@ http.createServer(async (req, res) => {
   // to the treasury — and credits seOHM for the ACTUAL on-chain amount, not the client's claim.
   if (req.method === 'POST' && u === '/api/stake') {
     const d = await body(req); if (!isWallet(d.wallet || '')) return json(res, 200, { error: 'bad wallet' });
+    if (PAUSED) return json(res, 200, { error: 'deposits are paused while the treasury is being secured — do not send eOHM to the treasury' });
     if (!EOHM_MINT) return json(res, 200, { error: 'staking opens the moment $eOHM launches on Elysium — bond HYPE or USDC now to get eOHM at a discount' });
     if (!/^0x[0-9a-fA-F]{64}$/.test(d.txHash || '')) return json(res, 200, { error: 'missing deposit tx — stake sends $eOHM to the treasury first' });
     const txHash = d.txHash.toLowerCase();
@@ -252,6 +256,7 @@ http.createServer(async (req, res) => {
   // The server reads the receipt, credits the on-chain amount (not the client's claim) and never credits a tx twice.
   if (req.method === 'POST' && u === '/api/bond') {
     const d = await body(req); if (!isWallet(d.wallet || '')) return json(res, 200, { error: 'bad wallet' });
+    if (PAUSED) return json(res, 200, { error: 'bonds are paused while the treasury is being secured — do not send funds to the treasury' });
     const m = BONDS.find((x) => x.id === d.market); if (!m) return json(res, 200, { error: 'bad market' });
     if (!/^0x[0-9a-fA-F]{64}$/.test(d.txHash || '')) return json(res, 200, { error: 'missing payment tx — a bond pays the treasury first' });
     const txHash = d.txHash.toLowerCase(); if (db.bondTx.includes(txHash)) return json(res, 200, { error: 'this payment was already credited' });

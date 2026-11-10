@@ -103,6 +103,7 @@
     if (M.mint && (!CFG || CFG.mint !== M.mint)) loadConfig().then(() => { if (wallet) loadChainBalance(); });   // launch went live: pick up the mint without a reload
     const bar = $('ca'); if (M.mint) { bar.classList.remove('pre'); $('caV').textContent = M.mint; $('caCopy').style.display = ''; bar.href = (CFG && CFG.explorer ? CFG.explorer : 'https://elysium.kinetiq.xyz/explorer') + '/address/' + M.mint; } else { bar.classList.add('pre'); $('caV').textContent = 'launching on Elysium · bond now at a discount'; $('caCopy').style.display = 'none'; bar.href = '#bond'; }
     $('preStake').style.display = M.mint ? 'none' : '';
+    if (M.paused) { $('preStake').style.display = ''; $('preStake').innerHTML = '<b>Deposits are paused</b> while the treasury is being secured. Do not send eOHM or HYPE to the treasury address.'; ['stakeBtn'].forEach((id) => ($(id).disabled = true)); document.querySelectorAll('[data-bond]').forEach((b) => (b.disabled = true)); }
   }
   $('caCopy').onclick = (e) => { e.preventDefault(); if (!M || !M.mint) return; navigator.clipboard && navigator.clipboard.writeText(M.mint); $('caCopy').textContent = 'Copied'; setTimeout(() => ($('caCopy').textContent = 'Copy'), 1200); };
   function renderAccount() { if (!A || !M) return; $('yBalance').textContent = M.mint ? (chainBal == null ? '—' : tok(chainBal) + ' eOHM') : 'pre-launch'; $('yNext').textContent = '+' + (A.staked * M.rate).toFixed(4) + ' eOHM'; updateLockUI();
@@ -151,6 +152,7 @@
     const amt = parseFloat($('stakeAmt').value); if (!(amt > 0)) return toast('enter an amount', true);
     try {
       if (stakeMode === 'stake') {
+        if (M && M.paused) return toast('deposits are paused while the treasury is being secured', true);
         if (!CFG || !CFG.mint) return toast('staking opens the moment $eOHM launches — bond now to get eOHM at a discount', true);
         if (CFG.minStake && amt < CFG.minStake) return toast('minimum stake is ' + tok(CFG.minStake) + ' eOHM', true);
         await ensureChain(); const txHash = await EVM().request({ method: 'eth_sendTransaction', params: [{ from: wallet, to: CFG.mint, data: transferData(CFG.treasury, units($('stakeAmt').value, CFG.decimals || 18)) }] });
@@ -160,6 +162,7 @@
     } catch (e) { toast(e && e.message ? e.message : 'transaction rejected', true); }
   };
   async function doBond(id) {
+    if (M && M.paused) return toast('bonds are paused while the treasury is being secured', true);
     if (!isW(wallet)) return toast('connect your wallet first', true); if (!EVM()) return toast('No EVM wallet found', true);
     const m = M.bonds.find((b) => b.id === id), raw = ($('bondAmt_' + id) || {}).value || '', amt = parseFloat(raw);
     if (!(amt > 0)) return toast('enter an amount', true); if (amt < m.min) return toast('minimum bond is ' + m.min + ' ' + m.name, true);
