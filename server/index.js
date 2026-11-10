@@ -16,7 +16,7 @@ const TOKEN = process.env.TOKEN_TICKER || 'eOHM';
 const DATA_PATH = process.env.DATA_PATH || path.join(ROOT, 'data.json');
 const EOHM_MINT = process.env.EOHM_MINT || '';  // $eOHM on Elysium — staking opens when this is set
 // staking custody: real $eOHM deposits land here (key held offline by the operator — never on this server)
-const TREASURY_WALLET = process.env.TREASURY_WALLET || '0x6A690F711928E8b938Fb5FE38F6fc2B8164Abc97';
+const TREASURY_WALLET = process.env.TREASURY_WALLET || '0x3DFabE8f7c388B35b7A9358AD69785879B9c6D80';
 const USDC = (process.env.USDC_ADDR || '0xb47c4c8f73f009cc0c0d3f92b388d13e293f0b65').toLowerCase();  // native USDC on Elysium (6 dp)
 const WHYPE = (process.env.WHYPE_ADDR || '0xba876237b0f021a6c6d852d6c26e107997cc5e81').toLowerCase();
 const EXPLORER = process.env.EXPLORER || 'https://elysium.kinetiq.xyz/explorer';
