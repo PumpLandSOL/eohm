@@ -23,13 +23,29 @@
     if (a && isW(a)) { wallet = a; localStorage.setItem('eohm_w', a); renderWallet(); loadAccount(); loadChainBalance(); }
     else { wallet = ''; A = null; localStorage.removeItem('eohm_w'); renderWallet(); ['yStaked', 'yBalance', 'yNext'].forEach((id) => ($(id).textContent = '—')); renderYourBonds(); }
   }
+  // ---- EVM wallet discovery (EIP-6963). Phantom also injects window.ethereum, so it is never picked: Rabby / MetaMask first. ----
+  const WALLETS = new Map(); let chosen = null;
+  const isPhantom = (p, info) => !!(p && (p.isPhantom || (info && /phantom/i.test(info.name + ' ' + info.rdns))));
+  window.addEventListener('eip6963:announceProvider', (e) => { const { info, provider } = e.detail || {}; if (info && provider && !isPhantom(provider, info)) WALLETS.set(info.uuid, { info, provider }); });
+  window.dispatchEvent(new Event('eip6963:requestProvider'));
+  function legacy() { const w = window.ethereum; if (!w) return []; const list = (w.providers && w.providers.length ? w.providers : [w]).filter((p) => !isPhantom(p));
+    return list.map((p) => ({ info: { name: p.isRabby ? 'Rabby' : p.isMetaMask ? 'MetaMask' : 'Browser wallet', rdns: p.isRabby ? 'io.rabby' : p.isMetaMask ? 'io.metamask' : 'legacy', icon: '' }, provider: p })); }
+  const rank = (w) => (/rabby/i.test(w.info.rdns + w.info.name) ? 0 : /metamask/i.test(w.info.rdns + w.info.name) ? 1 : 2);
+  function wallets() { const all = WALLETS.size ? [...WALLETS.values()] : legacy(); return all.sort((a, b) => rank(a) - rank(b)); }
+  function EVM() { return chosen || null; }
+  function pick() { return new Promise((res) => { const ws = wallets(); if (ws.length <= 1) return res(ws[0] || null);
+    const m = document.createElement('div'); m.className = 'wpick'; m.innerHTML = '<div class="wbox2"><div class="pt">Connect a wallet</div><div class="psub">Elysium is an EVM chain: use Rabby or MetaMask.</div>' + ws.map((w, i) => '<button data-i="' + i + '">' + (w.info.icon ? '<img src="' + w.info.icon + '" alt="">' : '<span class="wi">' + w.info.name[0] + '</span>') + w.info.name + '</button>').join('') + '<button class="cx">Cancel</button></div>';
+    document.body.appendChild(m); m.onclick = (e) => { const b = e.target.closest('button'); if (!b && e.target !== m) return; m.remove(); res(b && b.dataset.i != null ? ws[+b.dataset.i] : null); }; }); }
   $('connectBtn').onclick = async () => {
-    if (wallet) { setWallet(''); toast('Wallet disconnected'); return; }
-    const eth = window.ethereum; if (!eth) return toast('No EVM wallet found — install MetaMask or Rabby', true);
-    try { const acc = await eth.request({ method: 'eth_requestAccounts' }); if (acc && acc[0] && isW(acc[0])) { setWallet(acc[0]); toast('Connected ' + short(acc[0]) + ' · (3,3)'); ensureChain().catch(() => {}); } }
-    catch (e) { toast('Connection rejected', true); }
+    if (wallet) { setWallet(''); chosen = null; toast('Wallet disconnected'); return; }
+    await new Promise((r) => setTimeout(r, 60)); const w = await pick();
+    if (!w) return wallets().length ? null : toast('No EVM wallet found — install Rabby or MetaMask', true);
+    chosen = w.provider;
+    try { const acc = await chosen.request({ method: 'eth_requestAccounts' }); if (acc && acc[0] && isW(acc[0])) { setWallet(acc[0]); toast('Connected ' + w.info.name + ' · ' + short(acc[0])); ensureChain().catch(() => {}); if (chosen.on) chosen.on('accountsChanged', (a) => setWallet(a && a[0])); } }
+    catch (e) { chosen = null; toast('Connection rejected', true); }
   };
-  if (window.ethereum && window.ethereum.on) window.ethereum.on('accountsChanged', (acc) => setWallet(acc && acc[0]));
+  // restore a remembered session on the preferred EVM wallet (silent: eth_accounts never prompts)
+  setTimeout(async () => { if (!wallet) return; const w = wallets()[0]; if (!w) return; try { const a = await w.provider.request({ method: 'eth_accounts' }); if (a && a.map((x) => x.toLowerCase()).includes(wallet.toLowerCase())) chosen = w.provider; } catch (e) {} }, 400);
   renderWallet();
 
   // ---- fetch ----
@@ -38,10 +54,11 @@
   async function loadChainBalance() { if (!isW(wallet)) { chainBal = null; return; } try { const r = await post('/api/balance', { wallet }); chainBal = r.error ? null : r.balance; } catch (e) { chainBal = null; } renderAccount(); }
   // every payment goes out on Elysium — switch (or add) the network first
   async function ensureChain() {
+    if (!EVM()) throw new Error('reconnect Rabby or MetaMask to continue');
     if (!CFG) await loadConfig(); const idHex = '0x' + (+CFG.chainId).toString(16);
-    const cur = await window.ethereum.request({ method: 'eth_chainId' }); if (cur === idHex) return;
-    try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: idHex }] }); }
-    catch (e) { try { await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: idHex, chainName: 'Elysium', nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 }, rpcUrls: [CFG.rpcUrl], blockExplorerUrls: [CFG.explorer] }] }); }
+    const cur = await EVM().request({ method: 'eth_chainId' }); if (cur === idHex) return;
+    try { await EVM().request({ method: 'wallet_switchEthereumChain', params: [{ chainId: idHex }] }); }
+    catch (e) { try { await EVM().request({ method: 'wallet_addEthereumChain', params: [{ chainId: idHex, chainName: 'Elysium', nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 }, rpcUrls: [CFG.rpcUrl], blockExplorerUrls: [CFG.explorer] }] }); }
       catch (e2) { throw new Error('switch your wallet to Elysium (chain ' + CFG.chainId + ') to continue'); } }
   }
   async function loadAccount() { if (!isW(wallet)) return; try { A = await post('/api/account', { wallet }); reanchor(); renderAccount(); renderYourBonds(); } catch (e) {} }
@@ -113,7 +130,7 @@
   $('stakeMax').onclick = () => { if (A) $('stakeAmt').value = (stakeMode === 'stake' ? chainBal || 0 : A.staked).toFixed(2); };
   async function waitReceipt(txHash, what) {
     toast(what + ' sent — waiting for Elysium to confirm…');
-    for (let i = 0; i < 90; i++) { await new Promise((r) => setTimeout(r, 2000)); try { const rc = await window.ethereum.request({ method: 'eth_getTransactionReceipt', params: [txHash] }); if (rc) { if (rc.status === '0x1') return txHash; throw new Error(what + ' transaction failed'); } } catch (e) { if (String(e.message).includes('failed')) throw e; } }
+    for (let i = 0; i < 90; i++) { await new Promise((r) => setTimeout(r, 2000)); try { const rc = await EVM().request({ method: 'eth_getTransactionReceipt', params: [txHash] }); if (rc) { if (rc.status === '0x1') return txHash; throw new Error(what + ' transaction failed'); } } catch (e) { if (String(e.message).includes('failed')) throw e; } }
     throw new Error(what + ' not confirmed yet — refresh in a minute');
   }
   const units = (amt, dec) => { const [i, f = ''] = String(amt).split('.'); return BigInt(i || '0') * 10n ** BigInt(dec) + BigInt((f + '0'.repeat(dec)).slice(0, dec) || '0'); };
@@ -125,20 +142,20 @@
       if (stakeMode === 'stake') {
         if (!CFG || !CFG.mint) return toast('staking opens the moment $eOHM launches — bond now to get eOHM at a discount', true);
         if (CFG.minStake && amt < CFG.minStake) return toast('minimum stake is ' + tok(CFG.minStake) + ' eOHM', true);
-        await ensureChain(); const txHash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from: wallet, to: CFG.mint, data: transferData(CFG.treasury, units($('stakeAmt').value, CFG.decimals || 18)) }] });
+        await ensureChain(); const txHash = await EVM().request({ method: 'eth_sendTransaction', params: [{ from: wallet, to: CFG.mint, data: transferData(CFG.treasury, units($('stakeAmt').value, CFG.decimals || 18)) }] });
         await waitReceipt(txHash, 'Deposit'); toast('Confirmed — verifying on Elysium…'); let r; for (let i = 0; i < 5; i++) { r = await post('/api/stake', { wallet, txHash }); if (!r.error || !/not found|try again/.test(r.error)) break; await new Promise((z) => setTimeout(z, 2500)); } if (r.error) return toast(r.error, true);
         A = r; reanchor(); renderAccount(); loadChainBalance(); $('stakeAmt').value = ''; toast('Staked ' + tok(amt) + ' eOHM · (3,3)');
       } else { const r = await post('/api/unstake', { wallet, amount: amt }); if (r.error) return toast(r.error, true); A = r; reanchor(); renderAccount(); $('stakeAmt').value = ''; toast('Unstaked — ' + tok(r.queued) + ' eOHM queued for payout'); }
     } catch (e) { toast(e && e.message ? e.message : 'transaction rejected', true); }
   };
   async function doBond(id) {
-    if (!isW(wallet)) return toast('connect your wallet first', true); if (!window.ethereum) return toast('No EVM wallet found', true);
+    if (!isW(wallet)) return toast('connect your wallet first', true); if (!EVM()) return toast('No EVM wallet found', true);
     const m = M.bonds.find((b) => b.id === id), raw = ($('bondAmt_' + id) || {}).value || '', amt = parseFloat(raw);
     if (!(amt > 0)) return toast('enter an amount', true); if (amt < m.min) return toast('minimum bond is ' + m.min + ' ' + m.name, true);
     try {
       await ensureChain(); if (!CFG) await loadConfig();
       const tx = m.asset === 'native' ? { from: wallet, to: CFG.treasury, value: '0x' + units(raw, 18).toString(16) } : { from: wallet, to: m.asset, data: transferData(CFG.treasury, units(raw, m.dec)) };
-      const txHash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [tx] }); await waitReceipt(txHash, 'Payment');
+      const txHash = await EVM().request({ method: 'eth_sendTransaction', params: [tx] }); await waitReceipt(txHash, 'Payment');
       let r; for (let i = 0; i < 5; i++) { r = await post('/api/bond', { wallet, market: id, txHash }); if (!r.error || !/not found|try again/.test(r.error)) break; await new Promise((z) => setTimeout(z, 2500)); }
       if (r.error) return toast(r.error, true); A = r; renderYourBonds(); loadMetrics(); $('bondAmt_' + id).value = ''; toast('Bonded ' + r.paid + ' ' + m.name + ' → ' + tok(r.payout) + ' eOHM vesting');
     } catch (e) { toast(e && e.message ? e.message : 'transaction rejected', true); }
