@@ -4,7 +4,7 @@ const fs = require('fs'), path = require('path'), len = (s) => [...s].length;
 const S = 'https://elysiumohm.com';
 const BIO = 'The first OHM fork on Elysium, Hyperliquid\'s L2. Stake to compound every 5 min. Bond HYPE or USDC for discounted eOHM. (3,3) $eOHM';
 const T = [
-['Pinned · launch', 'eohm-hype-14s.mp4', `2021 gave every chain an OHM. Ethereum, Avalanche, Fantom, Polygon, BSC, Solana.\n\nElysium never got one.\n\neOHM is the first OHM fork on Hyperliquid's L2.\n\n${S}\n\n$eOHM`],
+['Pinned · launch', 'eohm-hype-14s.mp4', `2021 gave every chain an OHM. Ethereum, Avalanche, Fantom, Polygon, BSC, Solana.\n\nElysium never got one.\n\neOHM is the first OHM fork on Hyperliquid's L2.\n\nCA: 0x71c346c90fc54aa6ea07f41087665f30b4a6aafd\n\n${S}`],
 ['2021 forks · market caps', 'eohm-g02-forks.png', `2021 OHM fork season, peak market caps:
 
 OlympusDAO (Ethereum): $4.3B

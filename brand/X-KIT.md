@@ -26,7 +26,7 @@ https://elysiumohm.com
 
 ## Tweets (all ≤245)
 
-### 1. Pinned · launch · 184 chars · media: `eohm-hype-14s.mp4`
+### 1. Pinned · launch · 225 chars · media: `eohm-hype-14s.mp4`
 ```
 2021 gave every chain an OHM. Ethereum, Avalanche, Fantom, Polygon, BSC, Solana.
 
@@ -34,9 +34,9 @@ Elysium never got one.
 
 eOHM is the first OHM fork on Hyperliquid's L2.
 
-https://elysiumohm.com
+CA: 0x71c346c90fc54aa6ea07f41087665f30b4a6aafd
 
-$eOHM
+https://elysiumohm.com
 ```
 
 ### 2. 2021 forks · market caps · 218 chars · media: `eohm-g02-forks.png`

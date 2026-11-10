@@ -15,7 +15,7 @@ const ROOT = path.join(__dirname, '..');
 const TOKEN = process.env.TOKEN_TICKER || 'eOHM';
 const DATA_PATH = process.env.DATA_PATH || path.join(ROOT, 'data.json');
 // $eOHM on Elysium. Staking opens the instant this is known: set EOHM_MINT, or POST /api/admin/mint (no redeploy, persisted).
-let EOHM_MINT = (process.env.EOHM_MINT || '').toLowerCase(), MINT_DEC = +(process.env.EOHM_DECIMALS || 18);
+let EOHM_MINT = (process.env.EOHM_MINT || '0x71c346c90fc54aa6ea07f41087665f30b4a6aafd').toLowerCase(), MINT_DEC = +(process.env.EOHM_DECIMALS || 18);
 // staking custody: real $eOHM deposits land here (key held offline by the operator — never on this server)
 const TREASURY_WALLET = process.env.TREASURY_WALLET || '0x3DFabE8f7c388B35b7A9358AD69785879B9c6D80';
 const USDC = (process.env.USDC_ADDR || '0xb47c4c8f73f009cc0c0d3f92b388d13e293f0b65').toLowerCase();  // native USDC on Elysium (6 dp)
