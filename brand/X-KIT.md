@@ -39,16 +39,14 @@ https://elysiumohm.com
 $eOHM
 ```
 
-### 2. 2021 forks + ATHs · 187 chars · media: `eohm-g02-forks.png`
+### 2. 2021 forks · market caps · 218 chars · media: `eohm-g02-forks.png`
 ```
-The 2021 OHM fork season:
+2021 OHM fork season, peak market caps:
 
-OHM peaked near $4.3B
-TIME hit $10,064, ~$2.1B mcap
-Snowbank $8,357
-KLIMA $3,777
-Rome $1,680
-Invictus $1,425
+OlympusDAO (Ethereum): $4.3B
+Wonderland (Avalanche): $2.1B
+
+Then KlimaDAO, Snowbank, Hector, Spartacus, Rome, Invictus, Jade.
 
 Every chain got its OHM. Elysium gets eOHM.
 

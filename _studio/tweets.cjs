@@ -5,7 +5,16 @@ const S = 'https://elysiumohm.com';
 const BIO = 'The first OHM fork on Elysium, Hyperliquid\'s L2. Stake to compound every 5 min. Bond HYPE or USDC for discounted eOHM. (3,3) $eOHM';
 const T = [
 ['Pinned · launch', 'eohm-hype-14s.mp4', `2021 gave every chain an OHM. Ethereum, Avalanche, Fantom, Polygon, BSC, Solana.\n\nElysium never got one.\n\neOHM is the first OHM fork on Hyperliquid's L2.\n\n${S}\n\n$eOHM`],
-['2021 forks + ATHs', 'eohm-g02-forks.png', `The 2021 OHM fork season:\n\nOHM peaked near $4.3B\nTIME hit $10,064, ~$2.1B mcap\nSnowbank $8,357\nKLIMA $3,777\nRome $1,680\nInvictus $1,425\n\nEvery chain got its OHM. Elysium gets eOHM.\n\n$eOHM`],
+['2021 forks · market caps', 'eohm-g02-forks.png', `2021 OHM fork season, peak market caps:
+
+OlympusDAO (Ethereum): $4.3B
+Wonderland (Avalanche): $2.1B
+
+Then KlimaDAO, Snowbank, Hector, Spartacus, Rome, Invictus, Jade.
+
+Every chain got its OHM. Elysium gets eOHM.
+
+$eOHM`],
 ['First on Elysium', 'eohm-g12-first.png', `There has never been an OHM fork on Elysium.\n\nNow there is.\n\neOHM: stake, bond, compound. The reserve currency of Hyperliquid's L2.\n\n${S}\n\n$eOHM`],
 ['Key art', 'eohm-g01-keyart.png', `The reserve currency of Elysium.\n\nStake eOHM to compound every 5 minutes. Bond HYPE or USDC for eOHM below market. Every bond verified on-chain.\n\n${S}`],
 ['How it works', 'eohm-g03-how.png', `How eOHM works:\n\n1. Stake: eOHM → seOHM, compounds every epoch\n2. Bond: HYPE, WHYPE or USDC → eOHM at 5–8% off\n3. Back: every bond lands in a treasury you can read on-chain\n\n$eOHM`],
