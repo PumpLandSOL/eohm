@@ -251,3 +251,17 @@ https://elysiumohm.com/app
 
 $eOHM
 ```
+
+### 20. How to stake · 217 chars · media: `eohm-howto.mp4`
+```
+How to stake eOHM:
+
+1. Open elysiumohm.com/app
+2. Connect Rabby or MetaMask (Elysium is added for you)
+3. Enter your eOHM and hit Stake
+4. Watch seOHM compound every 5 minutes
+
+No eOHM yet? Bond HYPE at 7% off.
+
+$eOHM
+```
