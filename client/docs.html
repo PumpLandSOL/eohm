@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eOHM Docs · staking, bonds, treasury on Elysium</title>
+<meta name="description" content="How eOHM works: staking and the rebase index, bond pricing and on-chain verification, the treasury, payouts, network details and API.">
+<link rel="icon" href="/client/mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/client/hl.css">
+<style>
+.lay{display:grid;grid-template-columns:220px 1fr;gap:50px;padding:40px 0 60px}
+.toc{position:sticky;top:84px;align-self:start;display:flex;flex-direction:column;gap:8px;font-size:14px}.toc .t{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:6px}.toc a{color:var(--dim)}.toc a:hover{color:var(--ink)}
+.doc{max-width:820px;min-width:0}.doc h1{font:800 clamp(34px,5vw,54px)/1.02 var(--sans);letter-spacing:-.04em}.doc h1 em{font-style:normal;color:var(--acc2)}
+.doc .lead{color:var(--dim);font-size:17px;margin:14px 0 10px}
+.doc h2{font:700 24px var(--sans);letter-spacing:-.02em;margin:48px 0 12px;padding-top:18px;border-top:1px solid var(--ln);scroll-margin-top:80px}
+.doc p,.doc li{color:var(--dim);line-height:1.75;margin-bottom:12px}.doc b{color:var(--ink);font-weight:600}.doc ul,.doc ol{padding-left:22px}
+.doc code{font:500 .86em var(--mono);background:var(--p2);border:1px solid var(--ln);padding:1px 6px;border-radius:4px;color:var(--acc2);word-break:break-all}
+.doc pre{font:400 13px/1.7 var(--mono);background:var(--p1);border:1px solid var(--ln2);border-radius:10px;padding:16px 18px;overflow-x:auto;color:var(--acc2);margin:10px 0 16px}
+.doc table{width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:14px}.doc td,.doc th{padding:11px 10px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:top}.doc th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}.doc td:first-child{color:var(--ink);white-space:nowrap}
+@media(max-width:900px){.lay{grid-template-columns:1fr;gap:20px}.toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px 16px}.toc .t{width:100%}.doc td:first-child{white-space:normal}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap hrow">
+  <a class="logo" href="/"><img src="/client/mark.svg" alt="" width="26" height="26">eOHM</a>
+  <nav class="tabs"><a class="tab" href="/">Home</a><a class="tab" href="/app">App</a><a class="tab on" href="/docs">Docs</a></nav>
+  <div class="wbox"><span class="net"><i></i>Elysium</span><a class="btn primary" href="/app">Launch app</a></div>
+</div></header>
+<div class="wrap lay">
+<aside class="toc"><div class="t">On this page</div><a href="#overview">Overview</a><a href="#network">Network</a><a href="#stake">Staking</a><a href="#rebase">Rebase &amp; index</a><a href="#bonds">Bonds</a><a href="#verify">Payment verification</a><a href="#treasury">Treasury</a><a href="#payouts">Payouts</a><a href="#params">Parameters</a><a href="#api">API</a><a href="#risks">Risks</a></aside>
+<main class="doc">
+<div class="kicker" style="font:500 12px var(--mono);letter-spacing:.12em;color:var(--acc)">DOCUMENTATION</div>
+<h1>How <em>eOHM</em> works</h1>
+<p class="lead">Everything that happens when you stake, bond, claim and unstake, and exactly what is read from Elysium along the way.</p>
+
+<h2 id="overview">Overview</h2>
+<p>eOHM is an OHM-style (3,3) reserve protocol on <b>Elysium</b>, Kinetiq's Hyperliquid L2. It has three parts: <b>staking</b> (eOHM → seOHM, compounding every epoch), <b>bonds</b> (HYPE, WHYPE or USDC → discounted eOHM, vested), and a <b>treasury</b> (one wallet on Elysium holding every bond payment and every staked eOHM).</p>
+
+<h2 id="network">Network</h2>
+<table><tr><td>Chain</td><td>Elysium mainnet (Arbitrum Orbit, settles to HyperEVM)</td></tr><tr><td>Chain ID</td><td><code>99901</code> · <code>0x1863d</code></td></tr><tr><td>Gas</td><td>HYPE</td></tr><tr><td>RPC</td><td><code>https://rpc.elysium.kinetiq.xyz</code></td></tr><tr><td>Explorer</td><td><code>https://elysium.kinetiq.xyz/explorer</code></td></tr><tr><td>USDC</td><td><code>0xb47c4c8f73f009cc0c0d3f92b388d13e293f0b65</code> (6 decimals)</td></tr><tr><td>WHYPE</td><td><code>0xba876237b0f021a6c6d852d6c26e107997cc5e81</code> (18 decimals)</td></tr><tr><td>Treasury</td><td><code>0x6A690F711928E8b938Fb5FE38F6fc2B8164Abc97</code></td></tr><tr><td>$eOHM</td><td>shown in the app the moment it launches</td></tr></table>
+<p>The app switches your wallet to Elysium, or adds it, before any payment. Watch out for look-alike tokens: several tokens on Elysium call themselves USDC. Only the address above is accepted for USDC bonds.</p>
+
+<h2 id="stake">Staking</h2>
+<p>Staking is a real transfer of eOHM from your wallet to the treasury. The server reads the transaction from Elysium and credits seOHM only if it succeeded, was sent by your wallet, called <code>transfer()</code> on the eOHM contract and paid the treasury. The amount credited is the on-chain amount. A fresh stake locks the position for the lock period before it can be unstaked.</p>
+
+<h2 id="rebase">Rebase &amp; index</h2>
+<p>Your seOHM is stored as a share of the pool (an "agon" balance). Every epoch the global <b>index</b> is multiplied by <code>1 + rate</code>, so every seOHM balance grows by the same percentage at the same moment. Between epochs the app interpolates the index so the balance ticks smoothly.</p>
+<pre>rate per epoch = (1 + APY)^(1 / epochs per year) − 1
+seOHM balance  = agons × index</pre>
+
+<h2 id="bonds">Bonds</h2>
+<p>Each market sells eOHM at a discount to the market price, vesting linearly over 5 days.</p>
+<pre>bond price  = eOHM price × (1 − discount)
+USD value   = amount × HYPE price   (HYPE, WHYPE)   ·   amount × 1 (USDC)
+eOHM owed   = USD value ÷ bond price</pre>
+<table><tr><th>Market</th><th>Discount</th><th>Paid as</th><th>Minimum</th></tr><tr><td>HYPE</td><td>7%</td><td>native HYPE transfer to the treasury</td><td>0.1 HYPE</td></tr><tr><td>WHYPE</td><td>8%</td><td>WHYPE <code>transfer()</code></td><td>0.1 WHYPE</td></tr><tr><td>USDC</td><td>5%</td><td>USDC <code>transfer()</code></td><td>5 USDC</td></tr></table>
+<p>The HYPE price is Hyperliquid's own mid price (with CoinGecko as a fallback), refreshed every 30 seconds. Vested eOHM can be claimed at any time: <b>Claim &amp; stake</b> moves it straight into seOHM, <b>Claim to wallet</b> queues it for payout.</p>
+
+<h2 id="verify">Payment verification</h2>
+<p>Your wallet signs and sends the payment, then the app posts only the transaction hash. The server fetches the transaction and its receipt from the Elysium RPC and checks:</p>
+<ol><li>the receipt status is success;</li><li>the transaction was sent from your connected wallet;</li><li>for HYPE: <code>tx.to</code> is the treasury and <code>tx.value</code> is the amount;</li><li>for USDC and WHYPE: a <code>Transfer(from = you, to = treasury)</code> log from that exact token contract, summed;</li><li>the amount is at or above the market minimum;</li><li>the hash has never been credited before.</li></ol>
+<p>Only then is the bond recorded, for the amount that actually arrived, whatever the app was told.</p>
+
+<h2 id="treasury">Treasury</h2>
+<p>The treasury is one wallet on Elysium. Its key is held offline by the operator and never touches the server. Every 30 seconds the server reads its native HYPE balance and its USDC balance from the chain, and the dashboard shows both alongside their USD value.</p>
+
+<h2 id="payouts">Payouts</h2>
+<p>Unstakes (after the lock) and "claim to wallet" both join the payout queue. The operator sends each payout from the treasury on Elysium. Claim &amp; stake never leaves the protocol and takes effect immediately.</p>
+
+<h2 id="params">Parameters</h2>
+<table><tr><td>Epoch</td><td>5 minutes</td></tr><tr><td>Vesting</td><td>5 days, linear</td></tr><tr><td>Supply</td><td>1,000,000,000 eOHM</td></tr><tr><td>Price</td><td>live from the deepest Elysium pool once listed</td></tr></table>
+
+<h2 id="api">API</h2>
+<pre>GET  /api/config     chain, treasury, mint, token addresses
+GET  /api/metrics    APY, index, epoch, treasury (on-chain), bonds, tape
+POST /api/account    { wallet }                  staked, bonds, pending payouts
+POST /api/bond       { wallet, market, txHash }  verify payment + record bond
+POST /api/claim      { wallet, autostake }
+POST /api/stake      { wallet, txHash }
+POST /api/unstake    { wallet, amount }</pre>
+
+<h2 id="risks">Risks</h2>
+<p>eOHM's price can fall. The APY is an emission rate paid in eOHM, not a promised dollar return. The treasury is a single wallet, and rebases, vesting and the payout queue run in the eOHM ledger rather than a smart contract, with payouts sent by the operator. Only commit what you can afford to lose.</p>
+</main></div>
+<footer class="foot"><div class="wrap"><div class="logo"><img src="/client/mark.svg" alt="" width="22" height="22">eOHM</div><p>The (3,3) reserve of Elysium, Hyperliquid's L2. <a href="/">Home</a> · <a href="/app">App</a> · <a href="https://x.com/eOHMElysium" target="_blank" rel="noopener">X</a></p></div></footer>
+</body>
+</html>

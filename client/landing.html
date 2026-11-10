@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eOHM · the (3,3) reserve of Elysium</title>
+<meta name="description" content="eOHM is the OHM-style reserve currency of Elysium, Hyperliquid's L2. Stake to compound every epoch. Bond HYPE or USDC for discounted eOHM. Every bond verified on-chain.">
+<meta property="og:title" content="eOHM · the (3,3) reserve of Elysium"><meta property="og:description" content="Stake. Bond. Compound. The OHM reserve for Hyperliquid's L2."><meta name="twitter:card" content="summary">
+<link rel="icon" href="/client/mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/client/hl.css">
+<style>
+.hero{position:relative;padding:72px 0 40px;overflow:hidden}
+#curve{position:absolute;inset:0;width:100%;height:100%;opacity:.9;pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font:500 12px var(--mono);color:var(--acc2);border:1px solid var(--ln2);background:rgba(80,227,194,.06);border-radius:99px;padding:6px 12px}.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 10px var(--up)}
+h1{font:800 clamp(42px,6.4vw,84px)/.98 var(--sans);letter-spacing:-.045em;margin:22px 0 20px}h1 em{font-style:normal;background:linear-gradient(92deg,var(--acc2),var(--acc) 60%,#2fbf9f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:18px;color:var(--dim);max-width:560px;line-height:1.6}.lede b{color:var(--ink);font-weight:600}
+.cta{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}.cta .btn{padding:14px 24px;font-size:15px}
+.term{background:rgba(10,26,23,.85);border:1px solid var(--ln2);border-radius:16px;padding:20px;backdrop-filter:blur(10px);box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(151,252,228,.04) inset}
+.term .th{display:flex;justify-content:space-between;align-items:center;font:500 11.5px var(--mono);color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+.term .big{font:700 52px/1 var(--sans);letter-spacing:-.03em;color:var(--acc2);margin:14px 0 4px;text-shadow:0 0 50px rgba(151,252,228,.3)}
+.kv{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--ln);font-size:13.5px}.kv span{color:var(--dim)}.kv b{font:500 13.5px var(--mono)}
+.strip{border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);background:rgba(10,26,23,.6)}.strip .wrap{display:grid;grid-template-columns:repeat(5,1fr)}.strip div.c{padding:18px 20px;border-left:1px solid var(--ln)}.strip div.c:first-child{border-left:0}
+.strip .l{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}.strip .v{font:700 24px var(--sans);letter-spacing:-.02em;margin-top:6px}
+section.s{padding:96px 0}
+.kicker{font:500 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+h2{font:800 clamp(30px,4.2vw,52px)/1.04 var(--sans);letter-spacing:-.035em;margin:12px 0 16px;max-width:820px}h2 em{font-style:normal;color:var(--acc2)}
+.sub{color:var(--dim);font-size:17px;max-width:660px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
+.step{background:var(--p1);border:1px solid var(--ln);border-radius:16px;padding:26px;position:relative;overflow:hidden}.step:hover{border-color:var(--ln2)}
+.step .n{font:600 12px var(--mono);color:var(--acc)}.step h3{font:700 24px var(--sans);letter-spacing:-.02em;margin:16px 0 10px}.step p{color:var(--dim);font-size:14.5px;line-height:1.65}
+.step .ic{position:absolute;right:20px;top:20px;width:44px;height:44px;border-radius:12px;background:var(--p3);border:1px solid var(--ln2);display:grid;place-items:center;color:var(--acc2);font:700 18px var(--mono)}
+.loop{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin-top:20px}
+.flow{display:grid;gap:10px}.fl{display:grid;grid-template-columns:120px 1fr auto;gap:14px;align-items:center;background:var(--p1);border:1px solid var(--ln);border-radius:12px;padding:14px 16px}.fl .a{font:600 12px var(--mono);color:var(--acc2)}.fl .b{color:var(--dim);font-size:14px}.fl .c{font:600 13px var(--mono);color:var(--up)}
+.btable{width:100%;border-collapse:collapse;margin-top:34px;background:var(--p1);border:1px solid var(--ln);border-radius:14px;overflow:hidden}.btable th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);text-align:left;padding:14px 18px;border-bottom:1px solid var(--ln);background:var(--p2)}.btable td{padding:16px 18px;border-bottom:1px solid var(--ln);font:500 14px var(--mono)}.btable tr:last-child td{border-bottom:0}.btable td:first-child{font:700 15px var(--sans)}.up{color:var(--up)}
+.cmp{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;margin-top:40px;border:1px solid var(--ln);border-radius:16px;overflow:hidden}.cmp>div{padding:15px 18px;border-bottom:1px solid var(--ln);font-size:14px}.cmp .h{font:700 15px var(--sans);background:var(--p2)}.cmp .k{color:var(--dim)}.cmp .me{background:rgba(80,227,194,.07);color:var(--ink);font-weight:600}.cmp .h.me{color:var(--acc2)}
+.faq{margin-top:36px;border-top:1px solid var(--ln)}.faq details{border-bottom:1px solid var(--ln)}.faq summary{list-style:none;cursor:pointer;padding:22px 0;font:600 18px var(--sans);display:flex;justify-content:space-between;gap:20px}.faq summary::-webkit-details-marker{display:none}.faq summary:after{content:'+';font:400 24px var(--mono);color:var(--acc)}.faq details[open] summary:after{content:'−'}.faq p{color:var(--dim);padding:0 0 22px;max-width:860px;line-height:1.7}
+.final{text-align:center;padding:110px 0;position:relative;overflow:hidden}.final h2{margin:14px auto 16px}.final .sub{margin:0 auto}.final .cta{justify-content:center}
+.glow{position:absolute;left:50%;top:50%;width:800px;height:400px;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(80,227,194,.16),transparent);pointer-events:none}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}.reveal.in{opacity:1;transform:none}
+.nav2{display:flex;gap:22px;flex:1}.nav2 a{color:var(--dim);font:600 13.5px var(--sans)}.nav2 a:hover{color:var(--ink)}
+@media(max-width:980px){.hero .wrap,.loop{grid-template-columns:1fr}.strip .wrap{grid-template-columns:1fr 1fr}.strip div.c:nth-child(odd){border-left:0}.strip div.c{border-top:1px solid var(--ln)}.three{grid-template-columns:1fr}.cmp{grid-template-columns:1fr 1fr}.cmp .k{grid-column:span 2;background:var(--p1)}.nav2{display:none}.fl{grid-template-columns:90px 1fr}.fl .c{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap hrow">
+  <a class="logo" href="/"><img src="/client/mark.svg" alt="" width="26" height="26">eOHM</a>
+  <nav class="nav2"><a href="#how">How it works</a><a href="#bonds">Bonds</a><a href="#compare">Compare</a><a href="#faq">FAQ</a><a href="/docs">Docs</a></nav>
+  <div class="wbox"><span class="net"><i></i>Elysium mainnet</span><a class="icb" href="https://x.com/eOHMElysium" target="_blank" rel="noopener" aria-label="eOHM on X">𝕏</a><a class="btn primary" href="/app">Launch app</a></div>
+</div></header>
+
+<section class="hero"><canvas id="curve"></canvas><div class="wrap">
+  <div><span class="eyebrow"><i></i>Live on Elysium · Hyperliquid's L2</span>
+    <h1>The reserve currency<br>of <em>Elysium.</em></h1>
+    <p class="lede">eOHM is an OHM-style <b>(3,3)</b> reserve for Hyperliquid's L2. <b>Stake</b> to compound every epoch. <b>Bond</b> HYPE or USDC to buy eOHM below market and grow the treasury that backs it. Every bond is a real payment, read off the chain before anything is credited.</p>
+    <div class="cta"><a class="btn primary" href="/app#bond">Bond HYPE →</a><a class="btn ghost" href="/app">Open the app</a></div></div>
+  <div class="term reveal in"><div class="th"><span>eOHM · staking</span><span id="tEpoch">epoch —</span></div>
+    <div class="big" id="tApy">—</div><div class="th" style="text-transform:none;letter-spacing:0;font-size:12.5px"><span>APY · compounding every <span id="tReb">5</span> min</span></div>
+    <div style="margin-top:16px"><div class="kv"><span>Next rebase</span><b id="tNext">—</b></div><div class="kv"><span>Index</span><b id="tIdx">—</b></div><div class="kv"><span>Treasury</span><b id="tTre">—</b></div><div class="kv"><span>HYPE</span><b id="tHype">—</b></div><div class="kv"><span>Best bond</span><b class="up" id="tBond">—</b></div></div></div>
+</div></section>
+
+<div class="strip"><div class="wrap">
+  <div class="c"><div class="l">Treasury</div><div class="v" id="sT">—</div></div><div class="c"><div class="l">eOHM price</div><div class="v" id="sP">—</div></div><div class="c"><div class="l">Total staked</div><div class="v" id="sS">—</div></div><div class="c"><div class="l">Stakers</div><div class="v" id="sN">—</div></div><div class="c"><div class="l">Elysium block</div><div class="v" id="sB">—</div></div>
+</div></div>
+
+<section class="s" id="how"><div class="wrap">
+  <div class="kicker reveal">How it works</div><h2 class="reveal">Three moves. <em>One flywheel.</em></h2><p class="sub reveal">OHM proved the model: a treasury that only grows, a token backed by what it holds, and stakers paid in the protocol's own supply. eOHM brings it to the chain where the traders already are.</p>
+  <div class="three">
+    <div class="step reveal"><div class="ic">01</div><div class="n">STAKE</div><h3>Compound every epoch</h3><p>Stake eOHM, receive seOHM. Every five minutes the index steps up and your seOHM balance grows with it. Unstake any time after the lock; payouts go out from the treasury.</p></div>
+    <div class="step reveal"><div class="ic">02</div><div class="n">BOND</div><h3>Buy eOHM below market</h3><p>Pay HYPE, WHYPE or USDC to the treasury and receive eOHM at a 5–8% discount, vesting linearly over five days. Claim to your wallet or claim &amp; stake in one click.</p></div>
+    <div class="step reveal"><div class="ic">03</div><div class="n">BACK</div><h3>A treasury you can read</h3><p>Every bond lands in one wallet on Elysium. Its HYPE and USDC balances are read from the chain every 30 seconds and shown live, so backing is a number anyone can check.</p></div>
+  </div>
+</div></section>
+
+<section class="s" style="padding-top:20px"><div class="wrap loop">
+  <div><div class="kicker reveal">The (3,3) loop</div><h2 class="reveal">Bonds fill the treasury. <em>Stakers hold.</em></h2><p class="sub reveal">If everyone stakes, everyone compounds. If someone bonds, the treasury grows and backing rises for every holder. Selling is the only move that breaks the loop, and the game is built so it pays least.</p></div>
+  <div class="flow">
+    <div class="fl reveal"><span class="a">BOND</span><span class="b">HYPE / USDC paid to the treasury on Elysium</span><span class="c">+ treasury</span></div>
+    <div class="fl reveal"><span class="a">VERIFY</span><span class="b">receipt read on-chain, real amount credited</span><span class="c">no double credit</span></div>
+    <div class="fl reveal"><span class="a">VEST</span><span class="b">discounted eOHM unlocks over 5 days</span><span class="c">−5 to −8%</span></div>
+    <div class="fl reveal"><span class="a">STAKE</span><span class="b">claim &amp; stake straight into seOHM</span><span class="c">+ every epoch</span></div>
+    <div class="fl reveal"><span class="a">REBASE</span><span class="b">index steps up, seOHM grows</span><span class="c" id="lRate">—</span></div>
+  </div>
+</div></section>
+
+<section class="s" id="bonds"><div class="wrap">
+  <div class="kicker reveal">Bonds · live</div><h2 class="reveal">Pay in HYPE. <em>Get eOHM cheaper.</em></h2><p class="sub reveal">Prices update with the live HYPE price. Each market pays the treasury directly; nothing moves until your own wallet signs.</p>
+  <div class="reveal" style="overflow-x:auto;margin-top:34px;border-radius:14px"><table class="btable" style="margin-top:0;min-width:640px"><thead><tr><th>Market</th><th>Discount</th><th>Bond price</th><th>Pays in</th><th>Vest</th><th>Minimum</th></tr></thead><tbody id="bt"><tr><td colspan="6" style="color:var(--mut)">loading…</td></tr></tbody></table></div>
+  <div class="cta reveal"><a class="btn primary" href="/app#bond">Bond now →</a></div>
+</div></section>
+
+<section class="s" id="compare"><div class="wrap">
+  <div class="kicker reveal">Compare</div><h2 class="reveal">Same game. <em>Better table.</em></h2><p class="sub reveal">OHM on Ethereum set the template; uOHM ran it on Robinhood Chain. eOHM runs it on Elysium, where HYPE is gas and the deepest on-chain trader base already lives.</p>
+  <div class="cmp reveal">
+    <div class="h k"></div><div class="h me">eOHM</div><div class="h">OHM</div><div class="h">uOHM</div>
+    <div class="k">Chain</div><div class="me">Elysium (Hyperliquid L2)</div><div>Ethereum</div><div>Robinhood Chain</div>
+    <div class="k">Gas</div><div class="me">HYPE, cents</div><div>ETH, dollars</div><div>ETH</div>
+    <div class="k">Bond assets</div><div class="me">HYPE · WHYPE · USDC</div><div>DAI · FRAX · LP</div><div>uOHM-ETH</div>
+    <div class="k">Bond verification</div><div class="me">receipt read on-chain</div><div>contract</div><div>ledger</div>
+    <div class="k">Rebase</div><div class="me">every 5 min</div><div>every 8 h</div><div>every 5 min</div>
+    <div class="k">Treasury view</div><div class="me">live wallet balances</div><div>dashboard</div><div>ledger figure</div>
+  </div>
+</div></section>
+
+<section class="s" id="faq" style="padding-top:40px"><div class="wrap">
+  <div class="kicker reveal">FAQ</div><h2 class="reveal">Questions, <em>answered.</em></h2>
+  <div class="faq reveal">
+    <details open><summary>What is eOHM?</summary><p>eOHM is an OHM-style reserve protocol on Elysium, the Hyperliquid L2 built by Kinetiq. Holders stake eOHM for seOHM, which grows every epoch as the index rebases. Bonds sell eOHM below market for HYPE, WHYPE or USDC, and every payment goes into the protocol treasury.</p></details>
+    <details><summary>What is (3,3)?</summary><p>It is the game-theory shorthand from OlympusDAO. If two players both stake, both earn (+3, +3). If one sells, the seller gains less and the stayer is hurt. The protocol pays the most to the people who stay staked, and bonds route new capital into the treasury instead of onto the market.</p></details>
+    <details><summary>How do bonds work?</summary><p>Pick a market (HYPE, WHYPE or USDC), enter an amount and sign the payment in your wallet. It goes straight to the treasury on Elysium. The eOHM server reads the transaction receipt from the Elysium RPC, checks that it came from your wallet, went to the treasury and succeeded, then credits the amount that actually arrived. Each transaction can be credited once. Your eOHM vests linearly over 5 days.</p></details>
+    <details><summary>How is the bond price set?</summary><p>Bond price = eOHM market price × (1 − discount). The USD value of a HYPE or WHYPE bond uses the live HYPE mid price from Hyperliquid, refreshed every 30 seconds. USDC is valued at $1.</p></details>
+    <details><summary>When can I stake?</summary><p>Staking accepts eOHM, so it opens the moment the $eOHM token launches on Elysium. Until then, bond to get eOHM below market. When it vests you can claim &amp; stake in one step.</p></details>
+    <details><summary>Where does the APY come from?</summary><p>From emissions. Each epoch the index increases and every seOHM balance grows by the same rate. It is paid in eOHM, so its dollar value depends on the eOHM price and on the treasury that backs it. The app shows the current rate, the next rebase and the runway at current emissions.</p></details>
+    <details><summary>Who holds the treasury?</summary><p>The treasury is a single wallet on Elysium, 0x6A690F711928E8b938Fb5FE38F6fc2B8164Abc97. Its key is held offline by the operator and never touches the server. Bond payments and staked eOHM sit there, and its HYPE and USDC balances are read live and shown on the dashboard.</p></details>
+    <details><summary>How do unstaking and payouts work?</summary><p>Unstaking (after the lock) and claiming vested eOHM to your wallet both join the payout queue, and the treasury sends the tokens on Elysium. Claim &amp; stake skips the queue and moves vested eOHM straight into seOHM.</p></details>
+    <details><summary>Which wallet and network do I need?</summary><p>Any EVM wallet such as MetaMask or Rabby. The app adds Elysium for you (chain ID 99901, RPC rpc.elysium.kinetiq.xyz, gas in HYPE). You need a little HYPE for gas, bridged from Hyperliquid through Kinetiq.</p></details>
+    <details><summary>What are the risks?</summary><p>eOHM's price can fall. APY is an emission rate, not a guaranteed return. The treasury is held in one wallet, rebases and vesting run in the eOHM ledger rather than a contract, and payouts are sent by the operator. Only bond or stake what you are prepared to lose.</p></details>
+  </div>
+</div></section>
+
+<section class="final"><div class="glow"></div><div class="wrap" style="position:relative">
+  <div class="kicker">Elysium · (3,3)</div><h2>Stake. Bond. <em>Compound.</em></h2><p class="sub">The reserve currency of Hyperliquid's L2 starts with the first bond.</p>
+  <div class="cta"><a class="btn primary" href="/app#bond">Bond HYPE →</a><a class="btn ghost" href="/docs">Read the docs</a></div>
+</div></section>
+
+<footer class="foot"><div class="wrap"><div class="logo"><img src="/client/mark.svg" alt="" width="22" height="22">eOHM</div><p>The (3,3) reserve of Elysium, Hyperliquid's L2. Staked eOHM and bond payments are held in the treasury wallet 0x6A69…bc97 and visible on-chain; rebases, the index and vesting run in the eOHM ledger and payouts are sent from the treasury. <a href="/app">App</a> · <a href="/docs">Docs</a> · <a href="https://x.com/eOHMElysium" target="_blank" rel="noopener">X</a></p></div></footer>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => '$' + (n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n.toFixed(2));
+  const tok = (n) => n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? Math.round(n).toLocaleString() : n.toFixed(2);
+  let M = null, t0 = 0;
+  async function load() {
+    try { M = await (await fetch('/api/metrics')).json(); t0 = Date.now(); } catch (e) { return; }
+    const T = M.treasuryOnchain || {};
+    $('tApy').textContent = Math.round(M.apy).toLocaleString() + '%'; $('tEpoch').textContent = 'epoch ' + M.epoch; $('tReb').textContent = Math.round(M.rebaseSec / 60);
+    $('tTre').textContent = money(M.treasury); $('tHype').textContent = T.hypeUsd ? '$' + T.hypeUsd.toFixed(2) : '—';
+    const best = M.bonds.slice().sort((a, b) => b.discount - a.discount)[0]; $('tBond').textContent = best ? best.name + ' −' + (best.discount * 100).toFixed(1) + '%' : '—';
+    $('sT').textContent = money(M.treasury); $('sP').textContent = '$' + M.price.toFixed(M.price < 0.01 ? 5 : 4); $('sS').textContent = tok(M.totalStaked); $('sN').textContent = M.stakers || 0;
+    $('lRate').textContent = '+' + (M.rate * 100).toFixed(4) + '% / epoch';
+    $('bt').innerHTML = M.bonds.map((b) => `<tr><td>${b.name}</td><td class="up">−${(b.discount * 100).toFixed(1)}%</td><td>$${b.price.toFixed(b.price < 0.01 ? 6 : 4)}</td><td>${b.name === 'USDC' ? 'USDC (6 dp)' : b.name === 'HYPE' ? 'native HYPE' : 'WHYPE token'}</td><td>${b.vestDays} days</td><td>${b.min} ${b.name}</td></tr>`).join('');
+  }
+  async function block() { try { const r = await fetch('https://rpc.elysium.kinetiq.xyz', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }) }); const j = await r.json(); $('sB').textContent = parseInt(j.result, 16).toLocaleString(); } catch (e) {} }
+  load(); block(); setInterval(load, 8000); setInterval(block, 4000);
+  setInterval(() => { if (!M) return; let n = M.nextRebaseIn - (Date.now() - t0) / 1000; while (n < 0) n += M.rebaseSec; $('tNext').textContent = Math.floor(n / 60) + ':' + String(Math.floor(n % 60)).padStart(2, '0');
+    $('tIdx').textContent = (M.index * (1 + M.rate * (1 - n / M.rebaseSec))).toFixed(6); }, 200);
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add('in')), { threshold: 0.12 }); document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  // hero: a compounding index curve drawn as a live depth-chart, mint on teal
+  const cv = $('curve'), g = cv.getContext('2d'); let W, H; const dpr = Math.min(2, devicePixelRatio || 1);
+  const fit = () => { W = cv.offsetWidth; H = cv.offsetHeight; cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); }; fit(); addEventListener('resize', fit);
+  const start = performance.now();
+  (function draw(now) { const t = (now - start) / 1000; g.clearRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(151,252,228,.05)'; g.lineWidth = 1; for (let x = 0; x < W; x += 64) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (let y = 0; y < H; y += 64) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+    const pts = []; const N = 160; for (let i = 0; i <= N; i++) { const u = i / N, x = u * W; const base = H * 0.92 - Math.pow(u, 2.2) * H * 0.62; const wob = Math.sin(u * 22 + t * 1.4) * 4 + Math.sin(u * 7 - t * 0.6) * 7; pts.push([x, base + wob * (0.3 + u)]); }
+    const grad = g.createLinearGradient(0, H * 0.25, 0, H); grad.addColorStop(0, 'rgba(80,227,194,.20)'); grad.addColorStop(1, 'rgba(80,227,194,0)');
+    g.beginPath(); g.moveTo(0, H); pts.forEach(([x, y]) => g.lineTo(x, y)); g.lineTo(W, H); g.closePath(); g.fillStyle = grad; g.fill();
+    g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.strokeStyle = 'rgba(151,252,228,.75)'; g.lineWidth = 2; g.shadowColor = 'rgba(151,252,228,.6)'; g.shadowBlur = 14; g.stroke(); g.shadowBlur = 0;
+    const k = Math.floor(((t * 0.08) % 1) * N), [px, py] = pts[k]; g.fillStyle = '#97fce4'; g.beginPath(); g.arc(px, py, 4, 0, 7); g.fill(); g.strokeStyle = 'rgba(151,252,228,.25)'; g.beginPath(); g.arc(px, py, 10 + Math.sin(t * 4) * 3, 0, 7); g.stroke();
+    requestAnimationFrame(draw); })(start);
+})();
+</script>
+</body>
+</html>
