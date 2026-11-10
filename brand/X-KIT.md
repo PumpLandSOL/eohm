@@ -265,3 +265,56 @@ No eOHM yet? Bond HYPE at 7% off.
 
 $eOHM
 ```
+
+### 21. Launch day · 196 chars · media: `eohm-g13-launchday.png`
+```
+Day one of the first OHM fork on Elysium:
+
+26.9M eOHM staked
+$332K volume
+4,792 trades
+
+Every stake sent to the treasury and verified on-chain before it counted.
+
+https://elysiumohm.com/app
+
+$eOHM
+```
+
+### 22. Index · 185 chars · media: `eohm-g14-index.png`
+```
+The eOHM index just passed 1.0067.
+
+That is +0.67% to every staker since launch, paid out automatically every 5 minutes.
+
+288 rebases a day. No claiming, no gas. Just hold seOHM.
+
+$eOHM
+```
+
+### 23. Connect · 165 chars · media: `eohm-g15-connect.png`
+```
+Staking eOHM takes three clicks:
+
+1. Open elysiumohm.com/app
+2. Pick Rabby or MetaMask
+3. Approve Elysium (added for you)
+
+Then stake, or bond HYPE at 7% off.
+
+$eOHM
+```
+
+### 24. For scale · 191 chars · media: `eohm-g16-gap.png`
+```
+OlympusDAO peaked at $4.35B.
+Wonderland peaked at $2.08B.
+
+eOHM is at $58K on day one.
+
+The first OHM fork on Elysium, Hyperliquid's L2.
+
+CA: 0x71c346c90fc54aa6ea07f41087665f30b4a6aafd
+
+$eOHM
+```
