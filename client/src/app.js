@@ -33,13 +33,24 @@
   const rank = (w) => (/rabby/i.test(w.info.rdns + w.info.name) ? 0 : /metamask/i.test(w.info.rdns + w.info.name) ? 1 : 2);
   function wallets() { const all = WALLETS.size ? [...WALLETS.values()] : legacy(); return all.sort((a, b) => rank(a) - rank(b)); }
   function EVM() { return chosen || null; }
-  function pick() { return new Promise((res) => { const ws = wallets(); if (ws.length <= 1) return res(ws[0] || null);
-    const m = document.createElement('div'); m.className = 'wpick'; m.innerHTML = '<div class="wbox2"><div class="pt">Connect a wallet</div><div class="psub">Elysium is an EVM chain: use Rabby or MetaMask.</div>' + ws.map((w, i) => '<button data-i="' + i + '">' + (w.info.icon ? '<img src="' + w.info.icon + '" alt="">' : '<span class="wi">' + w.info.name[0] + '</span>') + w.info.name + '</button>').join('') + '<button class="cx">Cancel</button></div>';
-    document.body.appendChild(m); m.onclick = (e) => { const b = e.target.closest('button'); if (!b && e.target !== m) return; m.remove(); res(b && b.dataset.i != null ? ws[+b.dataset.i] : null); }; }); }
+  // the connect menu always offers Rabby and MetaMask; detected wallets connect, missing ones link to install (or the MetaMask app on phones)
+  const RABBY_ICON = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#7084ff"/><path d="M8 19c0-5 4-9 10-9 4 0 6 2 6 4 0 3-4 3-8 3h-2c2 2 5 3 8 2-1 3-4 5-8 5-4 0-6-2-6-5z" fill="#fff"/></svg>');
+  const MM_ICON = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#f6851b"/><path d="M7 8l8 6-1.5-3.6zM25 8l-8 6 1.5-3.6zM9 20l2 4 4-1zM23 20l-2 4-4-1zM11 15l5 2 5-2-1 4h-8z" fill="#fff"/></svg>');
+  const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  function menu() { const ws = wallets(), out = [];
+    const has = (re) => ws.find((w) => re.test(w.info.rdns + ' ' + w.info.name));
+    const r = has(/rabby/i), m = has(/metamask/i);
+    out.push(r ? { ...r, info: { ...r.info, icon: r.info.icon || RABBY_ICON } } : { info: { name: 'Rabby', icon: RABBY_ICON }, install: 'https://rabby.io' });
+    out.push(m ? { ...m, info: { ...m.info, icon: m.info.icon || MM_ICON } } : { info: { name: 'MetaMask', icon: MM_ICON }, install: mobile ? 'https://metamask.app.link/dapp/' + location.host + location.pathname : 'https://metamask.io/download/' });
+    for (const w of ws) if (w !== r && w !== m) out.push(w); return out; }
+  function pick() { return new Promise((res) => { const ws = menu();
+    const m = document.createElement('div'); m.className = 'wpick'; m.innerHTML = '<div class="wbox2"><div class="pt">Connect a wallet</div><div class="psub">Elysium is an EVM chain: connect with Rabby or MetaMask.</div>' + ws.map((w, i) => '<button data-i="' + i + '"><img src="' + w.info.icon + '" alt="">' + w.info.name + (w.install ? '<span class="inst">' + (mobile && /MetaMask/.test(w.info.name) ? 'open app' : 'install') + ' ↗</span>' : '<span class="inst ok">detected</span>') + '</button>').join('') + '<button class="cx">Cancel</button></div>';
+    document.body.appendChild(m); m.onclick = (e) => { const bt = e.target.closest('button'); if (!bt && e.target !== m) return; m.remove(); const w = bt && bt.dataset.i != null ? ws[+bt.dataset.i] : null;
+      if (w && w.install) { window.open(w.install, '_blank', 'noopener'); return res(null); } res(w); }; }); }
   $('connectBtn').onclick = async () => {
     if (wallet) { setWallet(''); chosen = null; toast('Wallet disconnected'); return; }
     await new Promise((r) => setTimeout(r, 60)); const w = await pick();
-    if (!w) return wallets().length ? null : toast('No EVM wallet found — install Rabby or MetaMask', true);
+    if (!w) return;
     chosen = w.provider;
     try { const acc = await chosen.request({ method: 'eth_requestAccounts' }); if (acc && acc[0] && isW(acc[0])) { setWallet(acc[0]); toast('Connected ' + w.info.name + ' · ' + short(acc[0])); ensureChain().catch(() => {}); if (chosen.on) chosen.on('accountsChanged', (a) => setWallet(a && a[0])); } }
     catch (e) { chosen = null; toast('Connection rejected', true); }

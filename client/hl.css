@@ -32,3 +32,4 @@ footer.foot{border-top:1px solid var(--ln);padding:28px 0 40px;margin-top:30px}f
 .wbox2 button{display:flex;align-items:center;gap:12px;background:var(--p2);border:1px solid var(--ln);color:var(--ink);font:600 15px var(--sans);padding:12px 14px;border-radius:10px;cursor:pointer;text-align:left}.wbox2 button:hover{border-color:var(--acc)}
 .wbox2 button img,.wbox2 .wi{width:28px;height:28px;border-radius:7px}.wbox2 .wi{display:grid;place-items:center;background:var(--p3);color:var(--acc2);font-weight:700}
 .wbox2 .cx{justify-content:center;background:none;color:var(--dim)}
+.wbox2 .inst{margin-left:auto;font:500 11.5px var(--mono);color:var(--dim)}.wbox2 .inst.ok{color:var(--up)}
