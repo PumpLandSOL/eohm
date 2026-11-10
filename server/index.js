@@ -15,8 +15,8 @@ const ROOT = path.join(__dirname, '..');
 const TOKEN = process.env.TOKEN_TICKER || 'eOHM';
 const DATA_PATH = process.env.DATA_PATH || path.join(ROOT, 'data.json');
 // $eOHM on Elysium. Staking opens the instant this is known: set EOHM_MINT, or POST /api/admin/mint (no redeploy, persisted).
-// EMERGENCY PAUSE: no new stakes or bonds are accepted while paused (env DEPOSITS_PAUSED=1 or /api/admin/pause). Default ON until the treasury is confirmed safe.
-let PAUSED = process.env.DEPOSITS_PAUSED === undefined ? true : process.env.DEPOSITS_PAUSED === '1';
+// PAUSE switch: no new stakes or bonds while paused (env DEPOSITS_PAUSED=1 or /api/admin/pause?key=…&on=1). Off by default.
+let PAUSED = process.env.DEPOSITS_PAUSED === '1';
 let EOHM_MINT = (process.env.EOHM_MINT || '0x71c346c90fc54aa6ea07f41087665f30b4a6aafd').toLowerCase(), MINT_DEC = +(process.env.EOHM_DECIMALS || 18);
 // staking custody: real $eOHM deposits land here (key held offline by the operator — never on this server)
 const TREASURY_WALLET = process.env.TREASURY_WALLET || '0x6A690F711928E8b938Fb5FE38F6fc2B8164Abc97';
@@ -87,7 +87,7 @@ const REBASES_YR = 31557600 / REBASE_SEC;
 // current APY from the live pool, and the per-rebase rate derived from it
 // staked value from the COMMITTED index (no live fraction) — avoids a liveIndex→rate cycle
 // pool = real staked $eOHM in the treasury (falls back to the ledger tally before the first poll)
-function poolStaked() { return treasuryStaked > 0 ? treasuryStaked : db.totalAgons * db.index; }
+function poolStaked() { return db.totalAgons * db.index; }   // the seOHM ledger: what stakers are owed, independent of treasury moves
 // boost window: env-armed, or persisted in the ledger once armed via admin
 function boostUntil() { return Math.max(BOOST_UNTIL_ENV, db.boostUntil || 0, BOOST_HOURS > 0 ? BOOT_TS + BOOST_HOURS * 3600e3 : 0); }
 function boostActive() { return Date.now() < boostUntil(); }
