@@ -329,3 +329,19 @@ Stake with Rabby or MetaMask at elysiumohm.com/app and every 5-minute rebase com
 
 $eOHM
 ```
+
+### 26. Day one checklist · 235 chars · media: `eohm-g17-dayone-done.png`
+```
+Day one of eOHM, checked off:
+
+✓ $eOHM live on Elysium
+✓ 49.6M eOHM staked
+✓ $373K volume, 5,588 trades
+✓ bonds in HYPE, WHYPE, USDC
+✓ Rabby + MetaMask
+✓ 24h 2× APY boost running
+
+The first OHM fork on Hyperliquid's L2.
+
+elysiumohm.com
+```
