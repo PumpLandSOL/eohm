@@ -156,7 +156,7 @@ $eOHM
 ```
 The eOHM treasury is one wallet on Elysium:
 
-0x3DFabE8f7c388B35b7A9358AD69785879B9c6D80
+0x6A690F711928E8b938Fb5FE38F6fc2B8164Abc97
 
 Its HYPE and USDC are read from the chain every 30 seconds and shown live on the dashboard. Audit it yourself.
 
@@ -248,22 +248,6 @@ landing → app → quote a HYPE bond → quote a USDC bond → stake → projec
 The first OHM fork on Elysium is live.
 
 https://elysiumohm.com/app
-
-$eOHM
-```
-
-### 19. Market cap scale · 225 chars · media: `eohm-mcap-12s.mp4`
-```
-Peak market caps, 2021 OHM season:
-
-OlympusDAO: $4.35B
-Wonderland: $2.08B
-
-eOHM today: ~$9.8K
-
-That is 212,000x to Wonderland's peak and 442,000x to OlympusDAO's.
-
-The first OHM fork on Elysium is just getting started.
 
 $eOHM
 ```
